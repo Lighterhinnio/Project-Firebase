@@ -5,6 +5,7 @@ import {
 	getStorage,
 	list,
 	ref as storageRef,
+	uploadBytes,
 } from 'firebase/storage';
 import {
 	addDoc,
@@ -31,6 +32,14 @@ import {
 	remove,
 	set,
 } from 'firebase/database';
+import {
+	getAuth,
+	EmailAuthProvider,
+	onAuthStateChanged,
+	signOut,
+	updateProfile,
+} from 'firebase/auth';
+import * as firebaseui from 'firebaseui';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyAvE_IBp24gOIC_iOT0YRUJfK9KCSWP1W0',
@@ -45,8 +54,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// const storage = getStorage(app);
-// const db = getFirestore(app);
+const storage = getStorage(app);
+//const db = getFirestore(app);
 const db = getDatabase();
 //ZADANKO!
 
@@ -75,7 +84,7 @@ const db = getDatabase();
 //     }
 // });
 
-// const imageRef = ref(storage, "ZdjęcieCV.png");
+// // const imageRef = ref(storage, "ZdjęcieCV.png");
 // getDownloadURL(imageRef).then((url) => {
 //     const myImage = document.getElementById("myImage");
 //     myImage.src = url;
@@ -311,56 +320,38 @@ const db = getDatabase();
 //     });
 // })
 
-// const userName = document.getElementById('userName');
-// const userSurname = document.getElementById('userSurname');
-// const addUserBtn = document.getElementById('addUserBtn');
-// const usersRef = ref(db, 'users');
-// const usersList = document.getElementById('usersList');
+// const userName = document.getElementById("userName");
+// const userSurname = document.getElementById("userSurname");
+// const addUserBtn = document.getElementById("addUserBtn");
+// const usersRef = ref(db, "users");
+// const usersList = document.getElementById("usersList");
 
-// addUserBtn.addEventListener('click', () => {
-// 	const userRef = push(usersRef);
-// 	set(userRef, {
-// 		name: userName.value,
-// 		surname: userSurname.value,
-// 	});
-// });
-
+// addUserBtn.addEventListener("click", () => {
+//     const userRef = push(usersRef);
+//     set(userRef, {
+//         name: userName.value,
+//         surname: userSurname.value
+//     })
+// }
 // onValue(usersRef, (snapshot) => {
-// 	usersList.innerHTML = '';
-// 	snapshot.forEach((userSnapshot) => {
-// 		const user = userSnapshot.val();
-// 		const listItem = document.createElement('li');
-// 		listItem.innerText = `${user.name} ${user.surname}`;
-// 		const removeBtn = document.createElement('button');
-// 		removeBtn.innerText = 'Remove';
-// 		removeBtn.addEventListener('click', () => {
-// 			remove(userSnapshot.ref);
-// 		});
-// 		listItem.appendChild(removeBtn);
+//     usersList.innerHTML = "";
+//     snapshot.forEach(userSnapshot => {
+//         const user = userSnapshot.val();
+//         const listItem = document.createElement("li");
+//         listItem.innerText = `${user.name} ${user.surname}`;
 
-// 		usersList.appendChild(listItem);
-// 	});
-// });
+//         const removeBtn = document.createElement("button");
+//         removeBtn.innerText = "Remove";
+//         removeBtn.addEventListener("click", () => {
+//             remove(userSnapshot.ref);
+//         });
+//         listItem.appendChild(removeBtn);
 
-// changeText.addEventListener('change', () =>{
-
+//         usersList.appendChild(listItem);
+//     });
 // })
-// const textArea = document.getElementById('textArea');
-// const docRef = ref(db, 'doc');
-// 	set(docRef, {
-// 		text: ""
-// 	});
 
-// const fakeDoc = document.getElementById('fakeDoc');
-// fakeDoc.addEventListener('change', () => {
-// 	const docRef = ref(db, 'doc');
-// 	set(docRef, {
-// 		text: fakeDoc.value,
-// 	});
-// });
-
-// LUB TAK - wartość INPUT.
-
+//ZADANKO
 // const fakeDoc = document.getElementById("fakeDoc");
 // const docRef = ref(db, "doc");
 // fakeDoc.addEventListener("input", () => {
@@ -376,77 +367,138 @@ const db = getDatabase();
 //     }
 // })
 
-const usernameInput = document.getElementById("username");
-const usercolorInput = document.getElementById("usercolor");
-const adduserBtn = document.getElementById("adduser");
-const userSelect = document.getElementById("userselect");
-const selectedUserHeader = document.getElementById("selecteduser");
-const messageInput = document.getElementById("message");
-const sendMessageBtn = document.getElementById("sendmessage");
-const messagesDiv = document.getElementById("messages");
-let selectedUser = {};
-const messagesRef = ref(db, "messages");
+// const usernameInput = document.getElementById("username");
+// const usercolorInput = document.getElementById("usercolor");
+// const adduserBtn = document.getElementById("adduser");
+// const userSelect = document.getElementById("userselect");
+// const selectedUserHeader = document.getElementById("selecteduser");
+// const messageInput = document.getElementById("message");
+// const sendMessageBtn = document.getElementById("sendmessage");
+// const messagesDiv = document.getElementById("messages");
+// let selectedUser = {};
+// const messagesRef = ref(db, "messages");
 
-onChildAdded(messagesRef, (messageSnapshot) => {
-    const message = messageSnapshot.val();
+// onChildAdded(messagesRef, (messageSnapshot) => {
+//     const message = messageSnapshot.val();
 
-    const messageDiv = document.createElement("div");
-    const textSpan = document.createElement("span");
-    const authorSpan = document.createElement("span");
-    const dateSpan = document.createElement("span");
+//     const messageDiv = document.createElement("div");
+//     const textSpan = document.createElement("span");
+//     const authorSpan = document.createElement("span");
+//     const dateSpan = document.createElement("span");
 
-    textSpan.innerText = message.text;
-    authorSpan.innerText = message.createdBy;
-    dateSpan.innerText = message.createdAt;
+//     textSpan.innerText = message.text;
+//     authorSpan.innerText = message.createdBy;
+//     dateSpan.innerText = message.createdAt;
 
-    messageDiv.appendChild(textSpan);
-    messageDiv.appendChild(authorSpan);
-    messageDiv.appendChild(dateSpan);
-    messageDiv.style.backgroundColor = message.color;
-    messageDiv.classList.add("message");
+//     messageDiv.appendChild(textSpan);
+//     messageDiv.appendChild(authorSpan);
+//     messageDiv.appendChild(dateSpan);
+//     messageDiv.style.backgroundColor = message.color;
+//     messageDiv.classList.add("message");
 
-    messagesDiv.appendChild(messageDiv);
-})
+//     messagesDiv.appendChild(messageDiv);
+// })
 
-sendMessageBtn.addEventListener("click", () => {
-    const message = {
-        text: messageInput.value,
-        createdAt: new Date().toISOString(),
-        createdBy: selectedUser.username,
-        color: selectedUser.color
-    };
+// sendMessageBtn.addEventListener("click", () => {
+//     const message = {
+//         text: messageInput.value,
+//         createdAt: new Date().toISOString(),
+//         createdBy: selectedUser.username,
+//         color: selectedUser.color
+//     };
 
-    const messageRef = push(messagesRef);
-    set(messageRef, message);
-})
+//     const messageRef = push(messagesRef);
+//     set(messageRef, message);
+// })
 
-adduserBtn.addEventListener("click", () => {
-    const userRef = ref(db, `users/${usernameInput.value}`);
-    set(userRef, {
-        color: usercolorInput.value
-    });
-});
+// adduserBtn.addEventListener("click", () => {
+//     const userRef = ref(db, `users/${usernameInput.value}`);
+//     set(userRef, {
+//         color: usercolorInput.value
+//     });
+// });
 
-userSelect.addEventListener("change", () => {
-    selectedUser = {
-        username: userSelect.value,
-        color: userSelect.selectedOptions[0].dataset.color
-    }
-    selectedUserHeader.innerText = userSelect.value;
-    selectedUserHeader.style.color = userSelect.selectedOptions[0].dataset.color;
-})
+// userSelect.addEventListener("change", () => {
+//     selectedUser = {
+//         username: userSelect.value,
+//         color: userSelect.selectedOptions[0].dataset.color
+//     }
+//     selectedUserHeader.innerText = userSelect.value;
+//     selectedUserHeader.style.color = userSelect.selectedOptions[0].dataset.color;
+// })
 
-const usersRef = ref(db, "users");
-onValue(usersRef, (snapshot) => {
-    userSelect.innerHTML = "";
-    const emptyOption = document.createElement("option");
-    userSelect.appendChild(emptyOption);
+// const usersRef = ref(db, "users");
+// onValue(usersRef, (snapshot) => {
+//     userSelect.innerHTML = "";
+//     const emptyOption = document.createElement("option");
+//     userSelect.appendChild(emptyOption);
 
-    snapshot.forEach(userSnapshot => {
-        const user = userSnapshot.val();
-        const option = document.createElement("option");
-        option.innerText = userSnapshot.key;
-        option.dataset.color = user.color;
-        userSelect.appendChild(option);
-    })
-})
+//     snapshot.forEach(userSnapshot => {
+//         const user = userSnapshot.val();
+//         const option = document.createElement("option");
+//         option.innerText = userSnapshot.key;
+//         option.dataset.color = user.color;
+//         userSelect.appendChild(option);
+//     })
+// });
+
+
+
+// const loginHeader = document.getElementById('loginHeader');
+// const buttonSignOut = document.getElementById('signOutButton');
+// const profilePhotoInput = document.getElementById('profilePhoto');
+// const sendPhotoBtn = document.getElementById('sendPhoto');
+
+// buttonSignOut.addEventListener('click', () => {
+// 	signOut(auth);
+// });
+
+// // sendPhotoBtn.addEventListener("click", () => {
+// //     const file = profilePhotoInput.files[0];
+// //     const fileRef = storageRef(storage, `${auth.currentUser.uid}/${file.name}`);
+// //     uploadBytes(fileRef, file).then(result => {
+// //         getDownloadURL(fileRef).then((url) => {
+// //             updateProfile(auth.currentUser, {
+// //                 photoURL: url
+// //             });
+// //         });
+// //     });
+// // });
+
+// sendPhotoBtn.addEventListener('click', async () => {
+// 	const file = profilePhotoInput.files[0];
+// 	const fileRef = storageRef(storage, `${auth.currentUser.uid}/${file.name}`);
+// 	const _ = await uploadBytes(fileRef, file);
+// 	const url = await getDownloadURL(fileRef);
+// 	updateProfile(auth.currentUser, {
+// 		photoURL: url,
+// 	});
+// });
+
+// onAuthStateChanged(auth, (user) => {
+// 	if (user) {
+// 		loginHeader.innerText = `Witaj ${user.displayName}!`;
+// 		buttonSignOut.classList.remove('hidden');
+// 		profilePhotoInput.classList.remove('hidden');
+// 		sendPhotoBtn.classList.remove('hidden');
+// 	} else {
+// 		loginHeader.innerText = 'Zaloguj się! Dziadu!';
+// 		buttonSignOut.classList.add('hidden');
+// 		profilePhotoInput.classList.add('hidden');
+// 		sendPhotoBtn.classList.add('hidden');
+
+// 		const ui = new firebaseui.auth.AuthUI(auth);
+// 		ui.start('#firebaseui-auth-container', {
+// 			callbacks: {
+// 				signInSuccessWithAuthResult: (authResult, redirectUrl) => {
+// 					console.log(authResult);
+// 					console.log(redirectUrl);
+// 				},
+// 			},
+// 			signInOptions: [EmailAuthProvider.PROVIDER_ID],
+// 			signInSuccessUrl: 'http://localhost:8080/',
+// 		});
+// 	}
+// });
+
+const auth = getAuth(app);
